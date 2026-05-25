@@ -17,6 +17,8 @@ def analyze_symptoms():
             return jsonify(AnalyzeSymptomsResponse(success=False, error="No symptoms provided").model_dump()), 400
 
         symptoms = data['symptoms']
+        if not symptoms:
+            return jsonify(AnalyzeSymptomsResponse(success=False, error="No symptoms provided").model_dump()), 400
         if len(symptoms) < MIN_SYMPTOMS_LENGTH:
             return jsonify(AnalyzeSymptomsResponse(success=False, error=f"Please provide more detailed symptoms (at least {MIN_SYMPTOMS_LENGTH} characters)").model_dump()), 400
 

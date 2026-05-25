@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class AnalyzeSymptomsRequest(BaseModel):
-    symptoms: str = Field(..., min_length=70)
+    symptoms: str
 
 
 class RecommendSpecialistsRequest(BaseModel):

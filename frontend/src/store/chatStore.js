@@ -43,9 +43,10 @@ export const useChatStore = create((set) => ({
     setChatState: (newState) => set({ chatState: newState }),
 
        // Update user data (partial update)
-    updateUserData: (updates) => set(
-        (state) => ({ userData: { ...state.userData, ...updates } })
-      ),
+    updateUserData: (updates) => set((state) => {
+        const updated = typeof updates === 'function' ? updates(state.userData) : updates;
+        return { userData: { ...state.userData, ...updated } };
+      }),
 
        // Set specific user data field
     setUserDataField: (field, value) => set(
