@@ -3,6 +3,7 @@ import { useChatStore } from "../../store/chatStore";
 import ChatState from "../../constants/chatStates";
 import { isTerminalState } from "../../utils/chatFlow";
 import api from "../../services/api";
+import InputArea from "./InputArea.jsx";
 
 const ChatContainer = () => {
     const {
@@ -73,7 +74,13 @@ const ChatContainer = () => {
             }
         } catch (error) {
             console.error("Error:", error);
-            addBotMessage("Sorry, I'm having trouble connecting right now. Please make sure the backend server is running.");
+            if (error.message?.includes("more detailed")) {
+                addBotMessage("That's a bit short. Could you describe your symptoms in more detail?\nThe more details you provide, the better I can help you :)");
+                updateUserData({ symptoms: "" });
+                setChatState(ChatState.INPUT_SYMPTOMS);
+            } else {
+                addBotMessage("Sorry, I'm having trouble connecting right now. Please make sure the backend server is running.");
+            }
         }
     };
 
@@ -133,6 +140,12 @@ const ChatContainer = () => {
                 break;
 
             case "onConfirm":
+                if (userData.symptoms.length < 70) {
+                    addBotMessage("That's a bit short. Could you describe your symptoms in more detail?\nThe more details you provide, the better I can help you :)");
+                    updateUserData({ symptoms: "" });
+                    setChatState(ChatState.INPUT_SYMPTOMS);
+                    break;
+                }
                 addBotMessage("Okay... Now checking.\n\nPlease wait a moment while I analyze your symptoms.");
                 await processSymptomAnalysis(userData.symptoms);
                 break;
@@ -144,12 +157,8 @@ const ChatContainer = () => {
                 break;
 
             case "onRecommendRequest":
-                addBotMessage(`Okay. Based on your symptoms, it seems like you might need to consult a **${userData.specialist}**.\n\nWould you like me to recommend a specialist?`);
-                showQuickReplies([
-                    { label: "Recommend to me", value: "onRecommendRequest" },
-                    { label: "I'll check my own", value: "onDismiss" }
-                  ]);
-                setChatState(ChatState.RESULT_OPTIONS);
+                addBotMessage(`Okay. Based on your symptoms, it seems like you might need to consult a **${userData.specialist}**.\n\nPlease enter your city or province to find nearby specialists:`);
+                setChatState(ChatState.INPUT_LOCATION);
                 break;
 
             case "onDismiss":
@@ -256,14 +265,14 @@ const ChatContainer = () => {
     const showQuickRepliesUI = lastMessage && lastMessage.type === "quick_replies";
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col w-full">
             {showQuickRepliesUI && (
-                <div className="px-4 pb-2">
+                <div className="bg-[#2c2f33] px-4 py-2 border-t border-gray-700">
                     {lastMessage.options.map((option, index) => (
                         <button
                             key={index}
                             onClick={() => handleQuickReply(option.value)}
-                            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg flex items-center gap-1 mr-2 mb-2"
+                            className="px-4 py-2 bg-[#444654] text-white rounded-lg text-sm font-medium hover:bg-[#595a5e] transition-all mr-2 mb-2"
                         >
                             {option.label}
                         </button>
